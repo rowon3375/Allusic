@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 인터페이스 위치 지정!!!!!! -->
+<mapper namespace="music.is.mylife.dao.UserMapper">
+
+<!--  로그인 하기
+	아이디: selectUser
+	파라미터 타입: string
+	리턴 타입: user_info
+ -->
+<select id="selectUser" parameterType="string" resultType="user_info">
+	select * from user_info where user_id = #{user_id}
+</select>
+
+
+<!-- 회원가입하기 
+	아이디: insertUser
+	파라미터 타입: userinfo
+-->
+<insert id="insertUser" parameterType="user_info">
+	insert into user_info (
+		user_id, user_pw, user_name
+	) values (
+		#{user_id}, #{user_pw},#{user_name}
+	)
+</insert>
+
+<select id="joinDupleCheck" parameterType="user_info" resultType="int">
+	select count(*) from user_info
+	where user_id = #{user_id}
+</select>
+
+
+
+
+</mapper>

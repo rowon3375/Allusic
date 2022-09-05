@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 인터페이스 위치 지정!!!!!! -->
+<mapper namespace="music.is.mylife.dao.SongMapper">
+
+	<!--[메인 페이지] 조회수가 높은 순으로 상위 10개의 곡 출력 아이디: selectTopSong 파라미터 타입: Song 리턴 
+		타입: ArrayList<Song> * 작거나 같다 <= -> lte/le * 부등호(< >) 사용 -> <![CDATA[ ]]> 
+		문법 사용 -->
+	<select id="selectTopSong" parameterType="song"
+		resultType="song">
+		<![CDATA[
+	    	select * from (select singer.singer_id, singer.singer_name,
+				song.song_id, song.song_name, song.album_name, to_char(song.album_date,'YYYY') as album_date, song.hit, song.album_img
+			from singer singer, song song
+			where singer.singer_id = song.singer_id
+			order by song.hit desc) where rownum <= 10
+    	]]>
+
+	</select>
+
+
+	<!--[메인 페이지] 선택한 장르의 곡들을 조회수 순으로 출력(메인) 아이디: selectLikeSong 파라미터 타입: Song 
+		리턴 타입: ArrayList<Song> -->
+	<select id="selectSongByGenre" parameterType="string"
+		resultType="song">
+		select singer.singer_id, singer.singer_name,
+		song.song_id, song.song_name, song.album_name, to_char(song.album_date,'YYYY') as
+		album_date, song.hit, song.album_img
+		from singer singer, song song
+		where singer.singer_id = song.singer_id and song.genre = #{genre}
+		order by hit desc
+	</select>
+
+	<!-- [곡 페이지] 곡id, 가수 id를 입력받아 곡 객체 하나가져오기(곡) 아이디: selectAllSong 파라미터 타입: 
+		song 리턴 타입: Song -->
+	<select id="selectAllSong" parameterType="song"
+		resultType="song">
+		select singer.singer_id, singer.singer_name, singer.country,
+		song.song_id, song.song_name, song.hit, song.lyrics, song.album_name,
+		song.album_img,
+		to_char(song.album_date, 'YYYYMMDD') as album_date, song.writer, song.composer, song.genre
+		from singer singer, song song
+		where singer.singer_id = song.singer_id
+		and song.song_id = #{song_id}
+		and singer.singer_id = #{singer_id}
+	</select>
+
+	<!-- 해당 곡의 평균 별점 불러옴(곡) -->
+	<select id="selectStars" parameterType="int" resultType="double">
+		select
+		avg(star) from user_song_log where song_id = #{song_id}
+	</select>
+
+	<!-- 유저 아이디를 받아 유저가 가지고 있는 리스트를 가져옴(곡) -->
+	<select id="selectList" parameterType="string"
+		resultType="playlist">
+		select * from playlist where user_id=#{user_id }
+	</select>
+
+	<!-- 유저와 리스트이름이 중복되는 리스트가 있는지 확인(곡) -->
+	<select id="listDupleCheck" parameterType="playlist"
+		resultType="int">
+		select count(*) from playlist where user_id = #{user_id}
+		and list_name = #{list_name}
+	</select>
+
+	<!-- 플레이 리스트의 다음 시퀀스를 가져옴(곡) -->
+	<select id="selectListSeq" resultType="int">
+		select playlist_seq.nextval from dual
+	</select>
+	
+	<!-- 해당 playlist에 해당 곡이 있는지 없는지 확인 -->
+	<select id="selectSongCount" parameterType="int"
+		resultType="int">
+		select count(*) from playlist_detail where playlist_id = #{playlist_id} and
+		song_id = #{song_id}
+	</select>
+
+	<!--[검색 페이지] 1. 곡명으로 검색 2. 가수명으로 검색 -->
+	<select id="selectSongsBySongName" parameterType="string"
+		resultType="song">
+		select singer.singer_id, singer.singer_name, song.song_id, song.song_name,
+		song.album_name,
+		to_char(song.album_date,'YYYY') as album_date, song.album_img
+		from singer singer, song song
+		where singer.singer_id = song.singer_id and upper(song.song_name) like
+		upper('%' || #{searchText} ||'%')
+	</select>
+	<select id="selectSongsBySingerName" parameterType="string"
+		resultType="song">
+		select singer.singer_id, singer.singer_name, song.song_id, song.song_name,
+		song.album_name,
+		to_char(song.album_date,'YYYY') as album_date, song.album_img
+		from singer singer, song song
+		where singer.singer_id = song.singer_id and upper(singer.singer_name) like
+		upper('%' || #{searchText} ||'%')
+
+	</select>	
+	
+	
+
+	<!-- 리스트 추가하는 sql문 -->
+	<insert id="insertList" parameterType="playlist">
+		insert into
+		playlist(playlist_id,user_id,list_name,list_explain,list_like,list_date)
+		values(#{playlist_id}, #{user_id}, #{list_name}, #{list_explain}, 0,
+		sysdate)
+	</insert>
+
+	<!-- 곡을 리스트에 추가 -->
+	<insert id="insertList_Detail" parameterType="playlist">
+		insert into playlist_detail(list_detail_id,playlist_id,song_id)
+		values(playlist_detail_seq.nextval,#{playlist_id}, #{song_id})
+	</insert>
+
+
+
+
+	<select id="selectSongsById" parameterType="song"
+		resultType="song">
+		<![CDATA[
+	    	select * from (select singer.singer_id, singer.singer_name,
+				song.song_id, song.song_name, song.album_name, to_char(song.album_date,'YYYY') as album_date, song.hit, song.album_img
+			from singer singer, song song
+			where singer.singer_id = song.singer_id and song_id = #{song_id}
+			order by song.hit desc) where rownum <= 10
+    	]]>
+
+	</select>
+
+
+
+
+
+
+
+
+
+
+	
+
+
+	<!-- Playlist의 date를 최신날짜로 업데이트하는 sql문 -->
+	<update id="updateList_Date" parameterType="int">
+		update playlist set list_date = sysdate where playlist_id = #{playlist_id }
+	</update>
+
+	<select id="selectPlayListId" parameterType="string"
+		resultType="int">
+		select playlist_id from playlist where list_name=#{list_name}
+	</select>
+
+
+
+
+
+
+	<!-- 곡에 별점이 있는지 없는지 반환하는 sql문 -->
+	<select id="selectIsStars" parameterType="int" resultType="int">
+		select count(star) from user_song_log where song_id=#{song_id}
+	</select>
+
+
+
+	<!-- 곡 id로 상위 4개의 리스트를 반환받는 sql문 -->
+	<select id="selectTop4ListBySongId" parameterType="int"
+		resultType="playlist">
+			<![CDATA[  
+			select * from (select pl.list_like, pld.song_id, pld.playlist_id
+	        from playlist pl, playlist_detail pld
+	        where pl.playlist_id = pld.playlist_id and pld.song_id=#{song_id}
+	        order by list_like desc)
+	        where rownum <= 4
+	        ]]>
+	</select>
+
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

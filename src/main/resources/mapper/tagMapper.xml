@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <!-- 인터페이스 위치 지정!!!!!! -->
+<mapper namespace="music.is.mylife.dao.TagMapper">
+		
+		<!-- 곡 아이디를 입력받아 해당 곡의 상위 태그 10개를 반환(곡) -->
+		<select id="selectTop10TagBySongId" parameterType="int" resultType="tag">
+			<![CDATA[   
+				select * from (select t.tag_name,st.recommend 
+					from song_tag t, song_tag_detail st, song s 
+					where t.tag_id = st.tag_id and st.song_id = s.song_id and st.song_id = #{song_id}
+           			order by recommend desc )
+            		where rownum <= 10
+            ]]>
+		</select>
+		
+		<!-- song_id를 입력받아서 해당 곡의 상위 태그 3개를 반환 하는 sql문 -->
+		<select id="selectTop3TagBySongId" parameterType="int" resultType="tag">
+			<![CDATA[   
+				select * 
+				from (select * from song_tag_detail where song_id = #{song_id} order by recommend desc)
+				where rownum <= 3
+            ]]>
+		</select>
+		
+		
+		 
+		
+		<!-- 태그 id를 입력받아 태그 리턴 -->
+		<select id="selectTagsById" parameterType="int" resultType="tag">
+			select * from song_tag where tag_id = #{tag_id}
+		</select>
+
+			
+		
+		
+		
+		
+</mapper>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <!-- 인터페이스 위치 지정!!!!!! -->
+<mapper namespace="music.is.mylife.dao.ListMapper">
+
+	<!-- [리스트 페이지]_화원 
+		해당 곡이 들어있는 리스트 부르기(곡)
+				
+		아이디: selectListId
+		리턴 타입: ArrayList<string>
+	 -->
+	<select id="selectListId" resultType="playlist" parameterType="int">
+		select p.playlist_id, p.list_name, p.user_id ,pd.song_id,
+        s.album_img
+		from playlist p, playlist_detail pd, song s
+		where p.playlist_id = pd.playlist_id
+        and s.song_id = pd.song_id
+		and pd.song_id = #{song_id}
+	</select>
+	
+	<!--[리스트 페이지]
+		플레이리스트의 리스트 배너 상위 5개 출력(곡)
+		
+		아이디: selectListBanner
+		파라미터 타입: playlist
+		리턴 타입: ArrayList<Playlist>
+	  -->
+	 <select id="selectListBanner" resultType="playlist" parameterType="int">
+	 	<![CDATA[
+	    	select pd.playlist_id, song.song_id, song.album_img
+			from playlist_detail pd, song song
+			where pd.song_id = song.song_id
+			and rownum <= 5
+			and pd.playlist_id = #{playlist_id}
+    	]]>
+	 </select>
+	
+	<!-- 취향 분석 페이지 : 윤영 -->
+	<!-- 해당 유저의 모든 리스트 좋아요 수 -->
+	<select id="selectListLikesByUser" parameterType="string" resultType="double">
+		select sum(list_like) from playlist where user_id = #{user_id}
+	</select>
+	<!-- 해당 유저의 모든 리스트에 지금까지 달린 모든 댓글 수 -->
+	<select id="selectListCommentsNumByUser" parameterType="string" resultType="double">
+		select count(*) from list_comment lc, playlist p
+		where lc.playlist_id = p.playlist_id and  p.user_id = #{user_id}
+	</select>
+	<!-- 해당 유저의 총 리스트 수 -->
+	<select id="selectListCountByUser" parameterType="string" resultType="double">
+		select count(*) from playlist where user_id = #{user_id}
+	</select>
+	
+	 
+	 <!--[리스트 페이지]
+	   리스트 곡 정보 출력
+	   
+		아이디: selectListSong
+		리턴 타입: ArrayList<Playlist>
+	   -->
+	 <select id="selectListSong"  resultType="playlist" parameterType="int">
+	 	select p.playlist_id, pd.song_id,
+        song.song_name, song.genre, song.album_img,
+        singer.singer_name, singer.country, singer.singer_id
+		from playlist p, playlist_detail pd, song song, singer singer
+		where p.playlist_id = pd.playlist_id
+		and pd.song_id = song.song_id
+		and song.singer_id = singer.singer_id
+		and p.playlist_id = #{playlist_id}
+	 </select>
+	 
+	 <!-- [리스트 페이지] 
+	 	리스트 정보 출력
+	 	
+		아이디: selectListInfo
+		리턴 타입: Playlist
+		파라미터 타입: ArrayList<Playlist>
+	 -->
+	 <select id="selectListInfo" resultType="playlist" parameterType="int">
+	 	select playlist_id, user_id, list_name, list_explain, list_like, to_char(list_date, 'YYYY.MM.DD') as list_date
+		from playlist 
+		where playlist_id = #{playlist_id}
+	 </select>
+	 
+	 <!--[리스트 페이지] 
+	  	해당 리스트 곡 개수
+	  	
+		아이디: selectCountSong
+		리턴 타입: int
+		파라미터 타입: int
+	   -->
+	 <select id="selectCountSong" resultType="int" parameterType="int">
+	 	select count(pd.song_id)
+		from playlist p, playlist_detail pd
+		where p.playlist_id = pd.playlist_id
+		and pd.playlist_id = #{playlist_id}
+	 </select>
+	 
+	 <!-- [리스트 페이지] 
+	  	해당 리스트 댓글 개수
+	  	
+		아이디: selectCountComment
+		리턴 타입: int
+		파라미터 타입: int 
+	 -->
+	 <select id="selectCountComment" resultType="int" parameterType="int">
+	 	select count(ls.list_comment_id)
+		from list_comment ls, playlist p
+		where ls.playlist_id = p.playlist_id
+        and p.playlist_id = #{playlist_id}
+	 </select>
+	 
+	 
+	 <!--[리스트 페이지]
+	 	리스트 좋아요 검색
+	 	
+		아이디: selectListLike
+		리턴 타입: int
+		파라미터 타입: playlist  -->
+	 <select id="selectListLike" parameterType="int" resultType="playlist">
+	 	select list_like from playlist where playlist_id = #{playlist_id}
+	 </select>
+	 
+	 <!-- [리스트 페이지]
+	 	댓글 전체 출력
+	 	
+		아이디: selectListComment
+		리턴 타입: ArrayList<ListComment>
+		파라미터 타입: int -->
+	 <select id="selectListComment" parameterType="int" resultType="list_comment">
+	 	select list_comment_id, user_id, playlist_id, user_comment, to_char(comment_date, 'YYYY.MM.DD') as comment_date
+		from list_comment
+		where playlist_id = #{playlist_id}
+	 </select>
+	 
+	 <!-- insert문 -->
+	 
+	 <!--[리스트 페이지] 
+	  	리스트 댓글 입력
+	  	
+		아이디: insertListCommnet
+		파라미터 타입: ListComment -->
+	 <insert id="insertListCommnet" parameterType="list_comment">
+	 	insert into list_comment (list_comment_id, user_id, playlist_id, user_comment, comment_date)
+		values (list_comment_seq.nextval, #{user_id}, #{playlist_id}, #{user_comment}, sysdate)
+	 </insert>
+	 
+	 
+	 <!-- delete문 -->
+	 
+	 <!--[리스트 페이지] 
+	  	댓글 삭제하기
+	  	
+		아이디: deleteComment
+		파라미터 타입: ListComment 
+	  -->
+	<delete id="deleteComment" parameterType="list_comment">
+	 	delete from list_comment
+		where playlist_id = #{playlist_id}
+		and user_id = #{user_id}
+		and list_comment_id = #{list_comment_id}
+	 </delete>
+	 
+	 
+	 <!-- update문 -->
+	 
+	 <!-- [리스트 페이지] 
+	  	리스트 좋아요수 올리기/내리기
+	  	
+		아이디: updatePluseLike
+		파라미터 타입: int -->
+	 <update id="updateLike" parameterType="playlist">
+	 	update playlist set list_like = list_like + #{list_like} where playlist_id = #{playlist_id}
+	 </update>
+	 
+</mapper>

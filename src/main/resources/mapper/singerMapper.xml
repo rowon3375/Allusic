@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <!-- 인터페이스 위치 지정!!!!!! -->
+<mapper namespace="music.is.mylife.dao.SingerMapper">
+	<!-- 가수 아이디를 입력받아 가수 한명 불러옴 -->
+	<select id="selectSingerById" parameterType="int" resultType="singer">
+		 select * from singer where singer_id = #{singer_id}
+	</select>
+	
+
+
+</mapper>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <!-- 인터페이스 위치 지정!!!!!! -->
+<mapper namespace="music.is.mylife.dao.UserLogMapper">
+	<!-- 한 유저가 해당 곡에 매긴 별점 출력 -->
+	<select id="selectUserStar" parameterType="user_log" resultType="double">
+		select star from user_song_log where user_id = #{user_id} and song_id = #{song_id}
+	</select>
+
+	<!-- 한 유저가 지금까지 평가한 곡들의 별점 총합 -->
+	<select id="selectAllStarCountByUser" parameterType="string" resultType="double">
+		select sum(star) from user_song_log where user_id = #{user_id}
+	</select>
+	
+	<!-- 한 유저가 지금까지 별점을 매긴 곡 수 -->
+	<select id="selectSongCountByUser" parameterType="string" resultType="double">
+		select count(*) from user_song_log where user_id = #{user_id}
+	</select>
+	<!-- 한 유저가 지금까지 매긴 별점의 총합 -->
+	<select id="selectAllStarSumByUser" parameterType="string" resultType="double">
+		select sum(star) / count(*) from user_song_log where user_id = #{user_id}
+	</select>
+	<!-- 한 유저가 가장 많이 준 별점 -->
+	<select id="selectTopStarByUser" parameterType="string" resultType="double">
+		select star
+		from (select star, count(star) cnt from user_song_log 
+		        where user_id = #{user_id}
+		        group by star
+		        order by cnt desc)
+		where rownum = 1
+	</select>
+	
+	<!-- 특정 유저의 Top10 태그를 불러옴 -->
+	<select id="selectTop10TagByUser" parameterType="string" resultType="tag">
+		<![CDATA[
+		select * from
+		(select tag_id, (all_star/grade_count) as star_avg
+			from user_tag_log 
+			where user_id = #{user_id}
+			order by star_avg desc)
+		where rownum <=10
+		]]>
+	</select>
+ 	
+	<!-- 특정 유저의 Top3 가수를 불러옴 -->
+	<select id="selectTop3SingerByUser" parameterType="string" resultType="user_log">
+		<![CDATA[
+		select * from
+		(select user_singer_log_id, user_id, singer_id, all_star, grade_count,(all_star/grade_count) as star_avg
+			from user_singer_log 
+			where user_id = #{user_id}
+			order by star_avg desc)
+		where rownum <=6
+		]]>
+	</select>
+	<!-- 특정 유저의 Top3 국가를 불러옴 -->
+	<select id="selectTop3CountryByUser" parameterType="string" resultType="user_log">
+		<![CDATA[
+		select * from
+		(select user_country_log_id, user_id, country, all_star, grade_count,(all_star/grade_count) as star_avg
+			from user_country_log 
+			where user_id = #{user_id}
+			order by star_avg desc)
+		where rownum <=3
+		]]>
+	</select>
+	<!-- 특정 유저의 Top3 장르를 불러옴 -->
+	<select id="selectTop3GenreByUser" parameterType="string" resultType="user_log">
+		<![CDATA[
+		select * from
+		(select user_genre_log_id, user_id, genre , all_star, grade_count, (all_star/grade_count) as star_avg
+			from user_genre_log 
+			where user_id = #{user_id}
+			order by star_avg desc)
+		where rownum <=6
+		]]>
+	</select>
+	
+	
+	<!-- 사용자가 별점을 입력했을 때 로그 남기기 -->
+	
+	
+	<!-- 원래 해당 곡의 별점을 출력 -->
+	<select id="selectSongStarById" parameterType="user_log" resultType="double">
+		select star from user_song_log
+		where user_id = #{user_id} and song_id = #{song_id}
+	</select>
+	
+	<!-- 해당 곡에 별점을 줬는지 확인 -->
+	<select id="songStarCheck" parameterType="user_log" resultType="int">
+		select count(*) from user_song_log
+		where user_id = #{user_id} and song_id = #{song_id}
+	</select>
+	
+	<!-- 해당 태그에 별점을 줬는지 확인 -->
+	<select id="tagStarCheck" parameterType="user_log" resultType="int">
+		select count(*) from user_tag_log
+		where user_id = #{user_id} and tag_id = #{tag_id}
+	</select>
+	
+	<!-- 해당 가수에 별점을 줬는지 확인 -->
+	<select id="singerStarCheck" parameterType="user_log" resultType="int">
+		select count(*) from user_singer_log 
+		where user_id = #{user_id} and singer_id = #{singer_id}
+	</select>
+	
+	<!-- 해당 국가에 별점을 줬는지 확인 -->
+	<select id="countryStarCheck" parameterType="user_log" resultType="int">
+		select count(*) from user_country_log
+		where user_id = #{user_id} and country = #{country}
+	</select>
+	
+	<!-- 해당 장르에 별점을 줬는지 확인 -->
+	<select id="genreStarCheck" parameterType="user_log" resultType="int">
+		select count(*) from user_genre_log
+		where user_id = #{user_id} and genre = #{genre}
+	</select>
+	
+	
+	<!-- 해당 곡에 별점을 준 적이 없다면 insert -->
+	<insert id="insertSongLog" parameterType="user_log">
+		insert into user_song_log values (user_song_log_seq.nextval, #{user_id}, #{song_id} , #{star}, sysdate)
+	</insert>
+	
+	<!-- 해당 태그에 별점을 준 적이 없다면 insert -->
+	<insert id="insertTagLog" parameterType="user_log">
+		insert into user_tag_log values (user_tag_log_seq.nextval, #{user_id}, #{tag_id}, #{star}, 1)
+	</insert>
+	<!-- 해당 가수에 별점을 준 적이 없다면 insert -->
+	<insert id="insertSingerLog" parameterType="user_log">
+		insert into user_singer_log values (user_singer_log_seq.nextval, #{user_id}, #{singer_id} , #{star}, 1)
+	</insert>
+	<!-- 해당 국가에 별점을 준 적이 없다면 insert -->
+	<insert id="insertCountryLog" parameterType="user_log">
+		insert into user_country_log values (user_country_log_seq.nextval, #{user_id}, #{country} , #{star}, 1)
+	</insert>
+	<!-- 해당 장르에 별점을 준 적이 없다면 insert -->
+	<insert id="insertGenreLog" parameterType="user_log">
+		insert into user_genre_log values (user_genre_log_seq.nextval, #{user_id}, #{genre} , #{star}, 1)
+	</insert>
+	
+	
+	<!-- 해당 곡에 별점을 준 적이 있다면 update -->
+	<update id="updateSongLog" parameterType="user_log">
+		update user_song_log 
+		set star = #{star}, star_date = sysdate 
+		where user_id = #{user_id} and song_id = #{song_id}
+	</update>
+	
+	<!-- 해당 태그에 별점을 준 적이 있다면 update -->
+	<update id="updateTagLog" parameterType="user_log">
+		update user_tag_log 
+		set all_star = all_star + #{all_star}, grade_count = grade_count + #{grade_count}
+		where user_id = #{user_id} and tag_id = #{tag_id}
+	</update>
+	<!-- 해당 가수에 별점을 준 적이 있다면 update -->
+	<update id="updateSingerLog" parameterType="user_log">
+		update user_singer_log 
+		set all_star = all_star + #{all_star}, grade_count = grade_count + #{grade_count}
+		where user_id = #{user_id} and singer_id = #{singer_id}
+	</update>
+	<!-- 해당 국가에 별점을 준 적이 있다면 update -->
+	<update id="updateCountryLog" parameterType="user_log">
+		update user_country_log 
+		set all_star = all_star + #{all_star}, grade_count = grade_count + #{grade_count} 
+		where user_id = #{user_id} and country = #{country}
+	</update>
+	<!-- 해당 장르에 별점을 준 적이 있다면 update -->
+	<update id="updateGenreLog" parameterType="user_log">
+		update user_genre_log 
+		set all_star = all_star + #{all_star}, grade_count = grade_count + #{grade_count}
+		where user_id = #{user_id} and genre = #{genre}
+	</update>
+ 	
+ 	
+
+</mapper>

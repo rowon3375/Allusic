@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+<typeAliases>
+	
+  	<typeAlias type="music.is.mylife.vo.Singer" alias="singer"/>
+  	<typeAlias type="music.is.mylife.vo.Song" alias="song"/>
+  	<typeAlias type="music.is.mylife.vo.Tag" alias="tag"/>
+  	<typeAlias type="music.is.mylife.vo.UserInfo" alias="user_info"/>
+  	<typeAlias type="music.is.mylife.vo.UserLog" alias="user_log"/>
+  	<typeAlias type="music.is.mylife.vo.Playlist" alias="playlist"/>
+  	<typeAlias type="music.is.mylife.vo.ListComment" alias="list_comment"/>
+ 	
+ </typeAliases> 
+
+ 
+  	
+  <mappers>
+    <mapper resource="./mapper/singerMapper.xml"/>
+    <mapper resource="./mapper/songMapper.xml"/>
+    <mapper resource="./mapper/tagMapper.xml"/>
+    <mapper resource="./mapper/userMapper.xml"/>
+    <mapper resource="./mapper/userLogMapper.xml"/>
+    <mapper resource="./mapper/listMapper.xml"/>
+    
+  </mappers>
+
+</configuration>
